@@ -1,0 +1,272 @@
+/* ── Variables ── */
+:root {
+  --bg:       #080706;
+  --surface:  #111009;
+  --border:   #242018;
+  --gold:     #c8a84b;
+  --gold-dim: #6e5a28;
+  --text:     #ccc8c0;
+  --text-dim: #6a655e;
+}
+
+/* ── Reset ── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+/* ── Body ── */
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Crimson Text', Georgia, serif;
+  font-size: 18px;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  overflow-x: hidden;
+}
+
+/* ── Background grid ── */
+.bg-grid {
+  position: fixed;
+  inset: 0;
+  background-image:
+    linear-gradient(var(--border) 1px, transparent 1px),
+    linear-gradient(90deg, var(--border) 1px, transparent 1px);
+  background-size: 48px 48px;
+  opacity: .35;
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* ── Main ── */
+.main {
+  position: relative;
+  z-index: 1;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 6rem 1.5rem 3rem;
+  max-width: 760px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+/* ── Hero ── */
+.hero { text-align: center; margin-bottom: 3rem; }
+
+.logo {
+  font-family: 'Cinzel Decorative', serif;
+  font-size: clamp(2rem, 6vw, 3.2rem);
+  color: var(--gold);
+  letter-spacing: .04em;
+  line-height: 1.1;
+  text-shadow: 0 0 40px rgba(200, 168, 75, .2);
+}
+
+.logo span {
+  display: block;
+  color: var(--text);
+  font-size: .52em;
+  letter-spacing: .2em;
+  margin-top: .2em;
+}
+
+.tagline {
+  margin-top: .9rem;
+  color: var(--text-dim);
+  font-style: italic;
+  font-size: 1rem;
+  letter-spacing: .04em;
+}
+
+/* ── Search ── */
+.search-section { width: 100%; margin-bottom: 3rem; }
+
+.search-form {
+  display: flex;
+  width: 100%;
+  border: 1px solid var(--border);
+  transition: border-color .2s;
+}
+
+.search-form:focus-within { border-color: var(--gold-dim); }
+
+.search-input {
+  flex: 1;
+  background: var(--surface);
+  border: none;
+  color: var(--text);
+  padding: .85rem 1.2rem;
+  font-family: 'Crimson Text', serif;
+  font-size: 1.05rem;
+  outline: none;
+}
+
+.search-input::placeholder { color: var(--text-dim); }
+
+.search-btn {
+  background: var(--gold);
+  color: var(--bg);
+  border: none;
+  padding: .85rem 1.6rem;
+  font-family: 'Cinzel Decorative', serif;
+  font-size: .72rem;
+  letter-spacing: .08em;
+  cursor: pointer;
+  transition: background .2s;
+  white-space: nowrap;
+}
+
+.search-btn:hover { background: #e0c060; }
+
+/* ── Results ── */
+.results-section { width: 100%; }
+
+.results-placeholder {
+  text-align: center;
+  color: var(--text-dim);
+  font-style: italic;
+  padding: 2rem 0;
+}
+
+.results-meta {
+  display: flex;
+  gap: .5rem;
+  align-items: baseline;
+  margin-bottom: 1rem;
+  padding-bottom: .6rem;
+  border-bottom: 1px solid var(--border);
+  font-size: .9rem;
+}
+
+#results-count {
+  font-family: 'Cinzel Decorative', serif;
+  font-size: .75rem;
+  color: var(--gold);
+  letter-spacing: .06em;
+}
+
+#results-query { color: var(--text-dim); font-style: italic; }
+
+/* ── Card ── */
+.results-list { display: flex; flex-direction: column; gap: 1px; }
+
+.result-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  padding: 1.1rem 1.4rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1.5rem;
+  opacity: 0;
+  transform: translateY(8px);
+  animation: fadeUp .35s ease forwards;
+  transition: border-color .2s;
+}
+
+.result-card:hover { border-color: var(--gold-dim); }
+
+@keyframes fadeUp {
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Card left */
+.card-info { flex: 1; min-width: 0; }
+
+.card-title {
+  font-family: 'Cinzel Decorative', serif;
+  font-size: .85rem;
+  color: var(--gold);
+  text-decoration: none;
+  display: block;
+  margin-bottom: .45rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  letter-spacing: .02em;
+  transition: color .15s;
+}
+
+.card-title:hover { color: #e0c060; text-decoration: underline; }
+
+.card-meta {
+  display: flex;
+  align-items: center;
+  gap: .5rem;
+  font-size: .85rem;
+  color: var(--text-dim);
+}
+
+.card-platform {
+  background: var(--border);
+  color: var(--text);
+  padding: .1rem .45rem;
+  font-size: .75rem;
+  font-family: 'Cinzel Decorative', serif;
+  letter-spacing: .04em;
+}
+
+.card-divider { color: var(--border); }
+
+.card-seller { font-style: italic; }
+
+/* Card right */
+.card-price-col {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: .4rem;
+  flex-shrink: 0;
+}
+
+.card-price {
+  font-family: 'Cinzel Decorative', serif;
+  font-size: 1.05rem;
+  color: var(--text);
+  letter-spacing: .02em;
+}
+
+.card-btn {
+  background: transparent;
+  border: 1px solid var(--gold-dim);
+  color: var(--gold);
+  padding: .32rem .9rem;
+  font-family: 'Cinzel Decorative', serif;
+  font-size: .62rem;
+  letter-spacing: .08em;
+  text-decoration: none;
+  transition: background .2s, border-color .2s, color .2s;
+}
+
+.card-btn:hover {
+  background: var(--gold);
+  border-color: var(--gold);
+  color: var(--bg);
+}
+
+.card-image {
+    width: 60px;
+    height: 80px;
+    object-fit: cover;
+    border: 1px solid var(--border);
+    flex-shrink: 0;
+}
+
+/* ── Footer ── */
+.footer {
+  position: relative;
+  z-index: 1;
+  text-align: center;
+  padding: 1.2rem;
+  color: var(--text-dim);
+  font-size: .82rem;
+  border-top: 1px solid var(--border);
+  font-style: italic;
+}
+
+/* ── Responsive ── */
+@media (max-width: 500px) {
+  .result-card { flex-direction: column; align-items: flex-start; }
+  .card-price-col { align-items: flex-start; flex-direction: row; gap: 1rem; }
+}
