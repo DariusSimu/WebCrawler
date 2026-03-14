@@ -59,8 +59,6 @@ const meta        = document.getElementById('results-meta');
 const countEl     = document.getElementById('results-count');
 const queryEl     = document.getElementById('results-query');
 
-const CONDITION_CLASS = { New: 'cond-new', Good: 'cond-good', Fair: 'cond-fair', Poor: 'cond-poor' };
-
 form.addEventListener('submit', async e => {
     e.preventDefault();
     const query = input.value.trim();
@@ -93,12 +91,13 @@ function renderResults(query, results) {
         card.style.animationDelay = `${i * 80}ms`;
         card.innerHTML = `
             <div class="card-info">
-                ${r.image ? `<img src="${r.image}" class="card-image" alt="${r.title}"/>` : ''}
-                <a href="${r.url}" class="card-title" target="_blank">${r.title}</a>
-                <div class="card-meta">
-                    <span class="card-platform">${r.platform}</span>
-                    <span class="card-divider">·</span>
-                    <span class="card-seller">${r.seller}</span>
+                ${r.image ? `<img src="${r.image}" class="card-image" alt="${r.title}" onerror="this.style.display='none'"/>` : ''}
+                <div class="card-details">
+                    <a href="${r.url}" class="card-title" target="_blank">${r.title}</a>
+                    <div class="card-meta">
+                        <span class="card-platform">${r.platform}</span>
+                        <span class="card-divider">·</span>
+                    </div>
                 </div>
             </div>
             <div class="card-price-col">

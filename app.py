@@ -1,5 +1,5 @@
 from flask import Flask, request, jsonify, send_from_directory
-from Backend.MainCrawler import search_all
+from Backend.main_crawler import search_all
 import os
 
 app = Flask(__name__)

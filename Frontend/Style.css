@@ -172,7 +172,13 @@ body {
 }
 
 /* Card left */
-.card-info { flex: 1; min-width: 0; }
+.card-info {
+    display: flex;
+    align-items: center;
+    gap: 1.2rem;
+    flex: 1;
+    min-width: 0;
+}
 
 .card-title {
   font-family: 'Cinzel Decorative', serif;
@@ -205,6 +211,11 @@ body {
   font-size: .75rem;
   font-family: 'Cinzel Decorative', serif;
   letter-spacing: .04em;
+}
+
+.card-details {
+  flex: 1;
+  min-width: 0;
 }
 
 .card-divider { color: var(--border); }
@@ -246,11 +257,12 @@ body {
 }
 
 .card-image {
-    width: 60px;
-    height: 80px;
+    width: 65px;
+    height: 85px;
     object-fit: cover;
     border: 1px solid var(--border);
     flex-shrink: 0;
+    background: var(--bg);
 }
 
 /* ── Footer ── */

@@ -1,12 +1,17 @@
 from Backend.Scrapers.base import BaseScraper
-from Backend.Models import Listing
+from Backend.models import Listing
 from urllib.parse import urlparse
+import time
 import requests
 
 class OpenLibraryScraper(BaseScraper):
     URL = "https://openlibrary.org/search.json"
 
-    def search(self, query, limit=10):
+    def search(self, query, limit):
+        if not self.is_allowed():
+            print(f"[{self.URL}] Crawling not allowed by robots.txt")
+            return []
+        
         response = requests.get(self.URL,
                                 params={'q': query, 'limit': limit},
                                 headers={'User-Agent': 'Mozilla/5.0'},
@@ -23,8 +28,8 @@ class OpenLibraryScraper(BaseScraper):
             listings.append(Listing(
                 title    = title,
                 platform = platform,
-                seller   = "N/A",
                 price    = "N/A",
                 url      = page_url
             ))
+        time.sleep(self.get_crawl_delay())
         return listings

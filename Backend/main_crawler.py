@@ -1,4 +1,4 @@
-from Backend.Scrapers.openLibrary import OpenLibraryScraper
+from Backend.Scrapers.open_library import OpenLibraryScraper
 from Backend.Scrapers.olx import OLXScraper
 
 SCRAPERS = [

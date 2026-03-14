@@ -4,7 +4,6 @@ from dataclasses import dataclass
 class Listing:
     title:    str
     platform: str
-    seller:   str
     price:    str
     url:      str
-    image:   str = ""
+    image:    str = "/static/images/empty_jpeg.jpg"
