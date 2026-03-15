@@ -1,10 +1,9 @@
-from re import search
-
 from Backend.Scrapers.base import BaseScraper
 from Backend.models import Listing
 from bs4 import BeautifulSoup
 from urllib.parse import urlparse
 from bs4 import BeautifulSoup
+from thefuzz import fuzz
 import requests
 import time
 
@@ -16,8 +15,8 @@ class OLXScraper(BaseScraper):
             print(f"[{self.URL}] Crawling not allowed by robots.txt")
             return []
         
-        search.url = f"{self.URL}{query.replace(' ', '-')}/"
-        response = requests.get(search.url,
+        search_url = f"{self.URL}{query.replace(' ', '-')}/"
+        response = requests.get(search_url,
                                 headers={'User-Agent': self.USER_AGENT},
                                 timeout=5)
         soup = BeautifulSoup(response.text, 'html.parser')
@@ -35,13 +34,22 @@ class OLXScraper(BaseScraper):
                 url =base + tag['href']
                 price_tag = card.find('p', attrs={'data-testid': 'ad-price'})
                 price = price_tag.contents[0].strip() if price_tag else "N/A"
+                l_card = card.find_parent('div', attrs={'data-testid': 'l-card'})
+                image_tag = l_card.find('img') if l_card else None
+                #print(f"Image tag: {image_tag}")
+                if image_tag and image_tag.get('src') and 'no_thumbnail' not in image_tag['src']:
+                    image = image_tag['src'].strip()
+                else:
+                    image = "/static/images/empty_jpeg.jpg"
 
-                listings.append(Listing(
-                    title    = title,
-                    platform = platform,
-                    price    = price,
-                    url      = url
-                ))
+                if any(query.lower() in title.lower() for query in query.split())
+                    listings.append(Listing(
+                        title    = title,
+                        platform = platform,
+                        price    = price,
+                        url      = url,
+                        image    = image
+                    ))
             except Exception as e:
                 print(f"Error parsing OLX listing: {e}")
                 continue

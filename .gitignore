@@ -40,3 +40,6 @@ build/
 .env
 secrets.py
 config.py
+
+# Local research and drafts
+Prototypes/

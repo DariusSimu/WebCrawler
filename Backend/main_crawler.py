@@ -1,9 +1,11 @@
 from Backend.Scrapers.open_library import OpenLibraryScraper
 from Backend.Scrapers.olx import OLXScraper
+from Backend.Scrapers.ebay import EbayScraper
 
 SCRAPERS = [
-    OpenLibraryScraper(),
+   # OpenLibraryScraper(),
     OLXScraper(),
+    EbayScraper(),
 ]
 
 def search_all(query, limit=10):

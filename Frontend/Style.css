@@ -257,8 +257,8 @@ body {
 }
 
 .card-image {
-    width: 65px;
-    height: 85px;
+    width: 120px;
+    height: 120px;
     object-fit: cover;
     border: 1px solid var(--border);
     flex-shrink: 0;
