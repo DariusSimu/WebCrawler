@@ -7,16 +7,16 @@ from thefuzz import fuzz
 import requests
 import time
 
-class OLXScraper(BaseScraper):
-    URL = "https://www.olx.ro/oferte/q-"
+class VintedScraper(BaseScraper):
+    URL = "https://www.vinted.ro/catalog?search_text="
 
     def search(self, query, limit):
         if not self.is_allowed():
             print(f"[{self.URL}] Crawling not allowed by robots.txt")
             return []
-        print(f"Searching allowed: OLX")
+        print(f"Searching allowed: Vinted")
 
-        search_url = f"{self.URL}{query.replace(' ', '-')}/"
+        search_url = f"{self.URL}{query.replace(' ', '%20')}"
         response = requests.get(search_url,
                                 headers={'User-Agent': self.USER_AGENT},
                                 timeout=5)
@@ -26,23 +26,22 @@ class OLXScraper(BaseScraper):
         platform = parsed.netloc
 
         listings = []
-        cards = soup.find_all('div', attrs={'data-testid': 'ad-card-title'})
-
+        cards = soup.find_all('div', class_= 'feed-grid__item-content')
         for card in cards[:limit]:
+            #print(f"Processing card: {card}")  # Debugging line to check card content
             try:
-                tag = card.find('a')
-                title = tag.find('h4').text.strip()
-                url =base + tag['href']
-                price_tag = card.find('p', attrs={'data-testid': 'ad-price'})
-                price = price_tag.contents[0].strip() if price_tag else "N/A"
-                l_card = card.find_parent('div', attrs={'data-testid': 'l-card'})
-                image_tag = l_card.find('img') if l_card else None
-                #print(f"Image tag: {image_tag}")
-                if image_tag and image_tag.get('src') and 'no_thumbnail' not in image_tag['src']:
-                    image = image_tag['src'].strip()
-                else:
-                    image = "/static/images/empty_jpeg.jpg"
+                tag = card.find('a', class_ = 'new-item-box__overlay')
+                url = tag['href']
 
+                title_tag = card.find('p', attrs={'data-testid': lambda x: x and x.endswith('--description-title')})
+                title = title_tag.text.strip() if title_tag else "N/A"
+                
+                price_tag = card.find('p', attrs={'data-testid': lambda x: x and x.endswith('--price-text')})
+                price = price_tag.text.strip() if price_tag else "N/A"
+
+                image_tag = card.find('img', class_ = 'web_ui__Image__content')
+                image = image_tag['src'] if image_tag and image_tag.get('src') else "/static/images/empty_jpeg.jpg"
+                
                 if any(query.lower() in title.lower() for query in query.split()):
                     listings.append(Listing(
                         title    = title,
@@ -51,10 +50,10 @@ class OLXScraper(BaseScraper):
                         url      = url,
                         image    = image
                     ))
+
             except Exception as e:
-                print(f"Error parsing OLX listing: {e}")
+                print(f"Error parsing Vinted listing: {e}")
                 continue
 
             time.sleep(self.get_crawl_delay())
-        
         return listings

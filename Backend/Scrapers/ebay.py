@@ -35,6 +35,7 @@ class EbayScraper(BaseScraper):
         if not self.is_allowed():
             print(f"[{self.URL}] Crawling not allowed by robots.txt")
             return []
+        print(f"Searching allowed: Ebay")
         
         if not self.access_token:
             self.get_access_token()
@@ -69,7 +70,7 @@ class EbayScraper(BaseScraper):
                 price    = item.get("price", {}).get("value", "N/A") + " " + item.get("price", {}).get("currency", "")
                 url      = item.get('itemWebUrl', '').strip()
                 image    = item.get('image', {}).get('imageUrl', '').strip()
-                platform = f"www.ebay.com - {marketplace}"
+                platform = f"www.ebay.{marketplace.split('_')[1].lower()}"
 
                 if any(query.lower() in title.lower() for query in query.split()):
                     listings.append(Listing(
