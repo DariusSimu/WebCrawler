@@ -81,7 +81,8 @@ class EbayScraper(BaseScraper):
                         image    = image
                     ))
             
-            time.sleep(self.get_crawl_delay())
             all_listings += listings
+            time.sleep(self.get_crawl_delay())
+
         
         return all_listings

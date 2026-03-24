@@ -55,6 +55,6 @@ class OLXScraper(BaseScraper):
                 print(f"Error parsing OLX listing: {e}")
                 continue
 
-            time.sleep(self.get_crawl_delay())
+            #time.sleep(self.get_crawl_delay())
         
         return listings

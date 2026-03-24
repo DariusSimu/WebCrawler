@@ -28,13 +28,12 @@ class VintedScraper(BaseScraper):
         listings = []
         cards = soup.find_all('div', class_= 'feed-grid__item-content')
         for card in cards[:limit]:
-            #print(f"Processing card: {card}")  # Debugging line to check card content
+            #print(f"Processing card: {card}")
             try:
                 tag = card.find('a', class_ = 'new-item-box__overlay')
                 url = tag['href']
 
-                title_tag = card.find('p', attrs={'data-testid': lambda x: x and x.endswith('--description-title')})
-                title = title_tag.text.strip() if title_tag else "N/A"
+                title = tag['title'].split(',')[0].strip() if tag['title'] else "N/A"
                 
                 price_tag = card.find('p', attrs={'data-testid': lambda x: x and x.endswith('--price-text')})
                 price = price_tag.text.strip() if price_tag else "N/A"
@@ -55,5 +54,5 @@ class VintedScraper(BaseScraper):
                 print(f"Error parsing Vinted listing: {e}")
                 continue
 
-            time.sleep(self.get_crawl_delay())
+            #time.sleep(self.get_crawl_delay())
         return listings

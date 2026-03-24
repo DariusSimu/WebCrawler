@@ -33,7 +33,7 @@ class BaseScraper:
         try:
             robots_parser.read()
             delay = robots_parser.crawl_delay(self.USER_AGENT)
-            return float(delay) if delay is not None else 0.0
+            return float(delay) if delay is not None else 1.0
         except:
             return 1.0
     
