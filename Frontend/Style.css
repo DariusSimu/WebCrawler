@@ -282,3 +282,150 @@ body {
   .result-card { flex-direction: column; align-items: flex-start; }
   .card-price-col { align-items: flex-start; flex-direction: row; gap: 1rem; }
 }
+
+.auth-bar {
+    position: absolute;
+    top: 1.5rem;
+    right: 2rem;
+}
+
+.auth-btn {
+    background: transparent;
+    border: 1px solid var(--gold-dim);
+    color: var(--gold);
+    padding: .4rem 1rem;
+    font-family: 'Cinzel Decorative', serif;
+    font-size: .7rem;
+    letter-spacing: .06em;
+    cursor: pointer;
+    transition: background .2s, color .2s;
+}
+
+.auth-btn:hover {
+    background: var(--gold);
+    color: var(--bg);
+}
+
+/* ── Auth page ── */
+.logo-link { text-decoration: none; }
+
+.auth-container {
+    width: 100%;
+    max-width: 420px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    padding: 2rem;
+}
+
+.auth-tabs {
+    display: flex;
+    margin-bottom: 1.5rem;
+    border-bottom: 1px solid var(--border);
+}
+
+.auth-tab {
+    flex: 1;
+    background: none;
+    border: none;
+    color: var(--text-dim);
+    font-family: 'Cinzel Decorative', serif;
+    font-size: .72rem;
+    letter-spacing: .08em;
+    padding: .6rem;
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    margin-bottom: -1px;
+    transition: color .2s, border-color .2s;
+}
+
+.auth-tab.active {
+    color: var(--gold);
+    border-bottom-color: var(--gold);
+}
+
+.auth-field {
+    margin-bottom: 1.2rem;
+}
+
+.auth-field label {
+    display: block;
+    font-size: .85rem;
+    color: var(--text-dim);
+    margin-bottom: .4rem;
+    font-family: 'Cinzel Decorative', serif;
+    font-size: .65rem;
+    letter-spacing: .08em;
+}
+
+.auth-field input {
+    width: 100%;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    color: var(--text);
+    padding: .7rem 1rem;
+    font-family: 'Crimson Text', serif;
+    font-size: 1rem;
+    outline: none;
+    transition: border-color .2s;
+}
+
+.auth-field input:focus { border-color: var(--gold-dim); }
+
+.auth-submit {
+    width: 100%;
+    background: var(--gold);
+    color: var(--bg);
+    border: none;
+    padding: .8rem;
+    font-family: 'Cinzel Decorative', serif;
+    font-size: .72rem;
+    letter-spacing: .08em;
+    cursor: pointer;
+    transition: background .2s;
+    margin-top: .5rem;
+}
+
+.auth-submit:hover { background: #e0c060; }
+
+.auth-message {
+    font-size: .9rem;
+    margin-bottom: 1rem;
+    min-height: 1.2rem;
+    font-style: italic;
+}
+
+.auth-error   { color: #e07070; }
+.auth-success { color: var(--green); }
+
+.account-section {
+    width: 100%;
+    margin-bottom: 2rem;
+    padding-bottom: 1.5rem;
+    border-bottom: 1px solid var(--border);
+}
+
+.account-label {
+    font-size: .8rem;
+    color: var(--text-dim);
+    font-family: 'Cinzel Decorative', serif;
+    letter-spacing: .08em;
+    margin-bottom: .3rem;
+}
+
+.account-email {
+    font-size: 1.1rem;
+    color: var(--gold);
+}
+
+.remove-btn {
+    border-color: var(--red) !important;
+    color: #e07070 !important;
+    margin-top: .3rem;
+}
+
+.remove-btn:hover {
+    background: #e07070 !important;
+    border-color: #e07070 !important;
+    color: #080706 !important;
+    cursor: pointer;
+}

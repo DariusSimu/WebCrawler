@@ -14,9 +14,12 @@
   <main class="main">
 
     <header class="hero">
-      <h1 class="logo">Announce<span>Finder</span></h1>
-      <p class="tagline">Find listings across the web</p>
-    </header>
+    <div class="auth-bar">
+        <button id="auth-btn" class="auth-btn">Sign In</button>
+    </div>
+    <h1 class="logo">Announce<span>Finder</span></h1>
+    <p class="tagline">Find listings across the web</p>
+</header>
 
     <section class="search-section">
       <form class="search-form" id="search-form">
@@ -52,62 +55,122 @@
 
   <script>
     const form        = document.getElementById('search-form');
-const input       = document.getElementById('search-input');
-const list        = document.getElementById('results-list');
-const placeholder = document.getElementById('results-placeholder');
-const meta        = document.getElementById('results-meta');
-const countEl     = document.getElementById('results-count');
-const queryEl     = document.getElementById('results-query');
+    const input       = document.getElementById('search-input');
+    const list        = document.getElementById('results-list');
+    const placeholder = document.getElementById('results-placeholder');
+    const meta        = document.getElementById('results-meta');
+    const countEl     = document.getElementById('results-count');
+    const queryEl     = document.getElementById('results-query');
+    // Check login state on page load
+    let currentUser = null;
 
-form.addEventListener('submit', async e => {
-    e.preventDefault();
-    const query = input.value.trim();
-    if (!query) return;
-
-    countEl.textContent = 'Searching...';
-    meta.style.display = 'flex';
-    list.innerHTML = '';
-    placeholder.style.display = 'none';
-
-    const response = await fetch(`/search?q=${encodeURIComponent(query)}`);
-    const results  = await response.json();
-    renderResults(query, results);
-});
-
-function renderResults(query, results) {
-    list.innerHTML = '';
-    meta.style.display = 'flex';
-    countEl.textContent = `${results.length} result${results.length !== 1 ? 's' : ''}`;
-    queryEl.textContent = `for "${query}"`;
-
-    if (results.length === 0) {
-        list.innerHTML = '<p class="results-placeholder">No results found.</p>';
-        return;
+    async function checkAuth() {
+        const res  = await fetch('/me');
+        const data = await res.json();
+        currentUser = data.logged_in ? data : null;
+        updateAuthButton();
     }
 
-    results.forEach((r, i) => {
-        const card = document.createElement('div');
-        card.className = 'result-card';
-        card.style.animationDelay = `${i * 80}ms`;
-        card.innerHTML = `
-            <div class="card-info">
-                ${r.image ? `<img src="${r.image}" class="card-image" alt="${r.title}" onerror="this.style.display='none'"/>` : ''}
-                <div class="card-details">
+    function updateAuthButton() {
+        const btn = document.getElementById('auth-btn');
+        if (currentUser) {
+            btn.textContent = 'Account';
+            btn.onclick = () => window.location.href = '/favorites';
+        } else {
+            btn.textContent = 'Sign In';
+            btn.onclick = () => window.location.href = '/login';
+        }
+    }
+
+    form.addEventListener('submit', async e => {
+        e.preventDefault();
+        const query = input.value.trim();
+        if (!query) return;
+
+        countEl.textContent = 'Searching...';
+        meta.style.display = 'flex';
+        list.innerHTML = '';
+        placeholder.style.display = 'none';
+
+        const response = await fetch(`/search?q=${encodeURIComponent(query)}`);
+        const results  = await response.json();
+        renderResults(query, results);
+    });
+
+    function renderResults(query, results) {
+        list.innerHTML = '';
+        meta.style.display = 'flex';
+        countEl.textContent = `${results.length} result${results.length !== 1 ? 's' : ''}`;
+        queryEl.textContent = `for "${query}"`;
+
+        if (results.length === 0) {
+            list.innerHTML = '<p class="results-placeholder">No results found.</p>';
+            return;
+        }
+
+        results.forEach((r, i) => {
+            const card = document.createElement('div');
+            card.className = 'result-card';
+            card.style.animationDelay = `${i * 80}ms`;
+            card.innerHTML = `
+                <div class="card-info">
+                    ${r.image ? `<img src="${r.image}" class="card-image" alt="${r.title}"/>` : ''}
                     <a href="${r.url}" class="card-title" target="_blank">${r.title}</a>
                     <div class="card-meta">
                         <span class="card-platform">${r.platform}</span>
-                        <span class="card-divider">·</span>
                     </div>
                 </div>
-            </div>
-            <div class="card-price-col">
-                <p class="card-price">${r.price}</p>
-                <a href="${r.url}" class="card-btn" target="_blank">View</a>
-            </div>
-        `;
-        list.appendChild(card);
-    });
-}
+                <div class="card-price-col">
+                    <p class="card-price">${r.price}</p>
+                    <button class="card-btn" data-saved="false" onclick="addToFavorites(this, ${JSON.stringify(r).replace(/"/g, '&quot;')})">
+                        Add to Favorites
+                    </button>
+                </div>
+            `;
+            list.appendChild(card);
+        });
+    }
+
+    async function addToFavorites(btn, listing) {
+      if (!currentUser) {
+          alert('Please sign in to save favorites.');
+          return;
+      }
+
+      const isSaved = btn.dataset.saved === 'true';
+
+      if (isSaved) {
+          const res  = await fetch('/favorites/remove', {
+              method:  'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body:    JSON.stringify({ listing_id: listing.listing_id })
+          });
+          const data = await res.json();
+          if (data.success) {
+              btn.textContent    = 'Add to Favorites';
+              btn.dataset.saved  = 'false';
+              btn.classList.remove('saved');
+          } else {
+              alert(data.error);
+          }
+      } else {
+          const res  = await fetch('/favorites/add', {
+              method:  'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body:    JSON.stringify(listing)
+          });
+          const data = await res.json();
+          if (data.success) {
+              btn.textContent   = '✓ Saved';
+              btn.dataset.saved = 'true';
+              btn.classList.add('saved');
+          } else {
+              alert(data.error);
+          }
+      }
+    }
+
+    checkAuth();
   </script>
 
 </body>
