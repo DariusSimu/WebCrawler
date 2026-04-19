@@ -7,6 +7,8 @@ import base64
 from config import EBAY_APP_ID, EBAY_CERT_ID
 
 class EbayScraper(BaseScraper):
+    CONDITION = "BOTH"
+
     URL = "https://api.ebay.com/buy/browse/v1/item_summary/search"
     TOKEN_URL = "https://api.ebay.com/identity/v1/oauth2/token"
     MARKETPLACES = ['EBAY_DE', 'EBAY_GB', 'EBAY_FR', 'EBAY_IT', 'EBAY_ES']
@@ -78,11 +80,12 @@ class EbayScraper(BaseScraper):
                         platform = platform,
                         price    = price,
                         url      = url,
+                        condition= self.CONDITION,
                         image    = image
                     ))
             
             all_listings += listings
-            time.sleep(self.get_crawl_delay())
+            #time.sleep(self.get_crawl_delay())
 
         
         return all_listings

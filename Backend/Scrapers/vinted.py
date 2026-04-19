@@ -8,6 +8,7 @@ import requests
 import time
 
 class VintedScraper(BaseScraper):
+    CONDITION = "USED"
     URL = "https://www.vinted.ro/catalog?search_text="
 
     def search(self, query, limit):
@@ -47,6 +48,7 @@ class VintedScraper(BaseScraper):
                         platform = platform,
                         price    = price,
                         url      = url,
+                        condition= self.CONDITION,
                         image    = image
                     ))
 

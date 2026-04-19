@@ -8,6 +8,7 @@ import requests
 import time
 
 class OLXScraper(BaseScraper):
+    CONDITION = "USED"
     URL = "https://www.olx.ro/oferte/q-"
 
     def search(self, query, limit):
@@ -49,6 +50,7 @@ class OLXScraper(BaseScraper):
                         platform = platform,
                         price    = price,
                         url      = url,
+                        condition= self.CONDITION,
                         image    = image
                     ))
             except Exception as e:

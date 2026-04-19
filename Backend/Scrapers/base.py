@@ -5,6 +5,7 @@ from urllib.robotparser import RobotFileParser
 class BaseScraper:
     URL = ""
     USER_AGENT = "Mozilla/5.0"
+    CONDITION = "NONE"
 
     def is_allowed(self) -> bool:
         parsed = urlparse(self.URL)

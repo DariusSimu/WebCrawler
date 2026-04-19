@@ -17,6 +17,7 @@ class Favorite(db.Model):
     platform       = db.Column(db.String(128))
     price          = db.Column(db.String(64))
     url            = db.Column(db.String(1024))
+    condition = db.Column(db.String(32), default='NONE')
     image          = db.Column(db.String(1024))
 
     __table_args__ = (

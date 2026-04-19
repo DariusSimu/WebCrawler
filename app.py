@@ -1,11 +1,10 @@
 from flask import Flask, request, jsonify, send_from_directory
-from flask_login import LoginManager, login_user, logout_user, login_required, current_user
-from werkzeug.security import generate_password_hash, check_password_hash
+from flask_login import LoginManager, login_user, logout_user, current_user
 from Backend.main_crawler import search_all
 from Backend.database import db
-from Backend.models_db import User, Favorite
+from Backend.models_db import User
+from Backend.services import register_user, login_user_service, add_favorite, remove_favorite, get_favorites
 from config import SECRET_KEY
-import re
 
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///announcefinder.db'
@@ -13,7 +12,6 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['SECRET_KEY'] = SECRET_KEY
 
 db.init_app(app)
-
 login_manager = LoginManager()
 login_manager.init_app(app)
 
@@ -24,7 +22,11 @@ def load_user(user_id):
 with app.app_context():
     db.create_all()
 
-# ------------------- Pages ------------------ #
+# --------------- Pages -------------------
+@app.route('/filter.js')
+def filter_js():
+    return send_from_directory('Frontend', 'filter.js')
+
 @app.route('/')
 def index():
     return send_from_directory('Frontend', 'MainPage.html')
@@ -41,7 +43,7 @@ def favorites_page():
 def styles():
     return send_from_directory('Frontend', 'Style.css')
 
-#------------------- Search ------------------ #
+# --------------- Search -------------------
 @app.route('/search')
 def search():
     query = request.args.get('q', '')
@@ -49,42 +51,24 @@ def search():
     if not query:
         return jsonify([])
     results = search_all(query, limit)
-    return jsonify([result.__dict__ for result in results])
+    return jsonify([r.__dict__ for r in results])
 
-
-#------------------- Authentication ------------------ #
-def is_valid_email(email):
-    return re.match(r'^[\w\.-]+@[\w\.-]+\.\w+$', email) is not None
-
+# -------------- Authentication --------------
 @app.route('/register', methods=['POST'])
 def register():
-    data = request.get_json()
-    email = data.get('email', '').strip()
-    password = data.get('password', '')
-
-    if not is_valid_email(email):
-        return jsonify({'error': 'Invalid email address'}), 400
-    if len(password) < 6:
-        return jsonify({'error': 'Password must be at least 6 characters long'}), 400
-    if User.query.filter_by(email=email).first():
-        return jsonify({'error': 'Email already registered'}), 400
-    
-    user = User(email=email, password_hash=generate_password_hash(password))
-    db.session.add(user)
-    db.session.commit()
+    data           = request.get_json()
+    user, error    = register_user(data.get('email', '').strip(), data.get('password', ''))
+    if error:
+        return jsonify({'error': error}), 400
     login_user(user)
     return jsonify({'success': True})
 
 @app.route('/login', methods=['POST'])
 def login():
-    data = request.get_json()
-    email = data.get('email', '').strip()
-    password = data.get('password', '')
-    user = User.query.filter_by(email=email).first()
-
-    if not user or not check_password_hash(user.password_hash, password):
-        return jsonify({'error': 'Invalid email or password'}), 401
-    
+    data           = request.get_json()
+    user, error    = login_user_service(data.get('email', '').strip(), data.get('password', ''))
+    if error:
+        return jsonify({'error': error}), 401
     login_user(user)
     return jsonify({'success': True})
 
@@ -99,55 +83,30 @@ def me():
         return jsonify({'logged_in': True, 'email': current_user.email})
     return jsonify({'logged_in': False})
 
-#------------------- Favorites ------------------ #
+# ------------- Favorites --------------
 @app.route('/favorites/add', methods=['POST'])
-def add_favorite():
+def fav_add():
     if not current_user.is_authenticated:
         return jsonify({'error': 'Not logged in'}), 401
-    
-    data = request.get_json()
-    if Favorite.query.filter_by(user_id=current_user.id, 
-                                listing_id=data['listing_id']).first():
-        return jsonify({'error': 'Already in favorites'}), 400
-    
-    fav = Favorite(
-        user_id = current_user.id,
-        listing_id = data['listing_id'],
-        title = data['title'],
-        platform = data['platform'],
-        price = data['price'],
-        url = data['url'],
-        image = data['image']
-    )
-    db.session.add(fav)
-    db.session.commit()
+    success, error = add_favorite(current_user.id, request.get_json())
+    if error:
+        return jsonify({'error': error}), 400
     return jsonify({'success': True})
 
 @app.route('/favorites/remove', methods=['POST'])
-def remove_favorite():
+def fav_remove():
     if not current_user.is_authenticated:
         return jsonify({'error': 'Not logged in'}), 401
-    data = request.get_json()
-    fav  = Favorite.query.filter_by(user_id=current_user.id, listing_id=data['listing_id']).first()
-    if not fav:
-        return jsonify({'error': 'Not in favorites'}), 404
-    db.session.delete(fav)
-    db.session.commit()
+    success, error = remove_favorite(current_user.id, request.get_json()['listing_id'])
+    if error:
+        return jsonify({'error': error}), 404
     return jsonify({'success': True})
 
 @app.route('/favorites/get')
-def get_favorites():
+def fav_get():
     if not current_user.is_authenticated:
         return jsonify({'error': 'Not logged in'}), 401
-    favs = Favorite.query.filter_by(user_id=current_user.id).all()
-    return jsonify([{
-        'listing_id': f.listing_id,
-        'title':      f.title,
-        'platform':   f.platform,
-        'price':      f.price,
-        'url':        f.url,
-        'image':      f.image
-    } for f in favs])
+    return jsonify(get_favorites(current_user.id))
 
 if __name__ == '__main__':
     app.run(debug=True)

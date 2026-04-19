@@ -9,6 +9,7 @@ class Listing:
     price:    str
     url:      str
     image:    str = "/static/images/empty_jpeg.jpg"
+    condition: str = "NONE"
     listing_id: str = field(init=False)
 
     def __post_init__(self):

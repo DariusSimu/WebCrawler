@@ -6,6 +6,7 @@
   <title>Announce Finder</title>
   <link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@700&family=Crimson+Text:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet"/>
   <link rel="stylesheet" href="Style.css"/>
+  <script src="/filter.js"></script>
 </head>
 <body>
 
@@ -14,12 +15,12 @@
   <main class="main">
 
     <header class="hero">
-    <div class="auth-bar">
+      <div class="auth-bar">
         <button id="auth-btn" class="auth-btn">Sign In</button>
-    </div>
-    <h1 class="logo">Announce<span>Finder</span></h1>
-    <p class="tagline">Find listings across the web</p>
-</header>
+      </div>
+      <h1 class="logo">Announce<span>Finder</span></h1>
+      <p class="tagline">Find listings across the web</p>
+    </header>
 
     <section class="search-section">
       <form class="search-form" id="search-form">
@@ -34,23 +35,69 @@
       </form>
     </section>
 
-    <section class="results-section" id="results-section">
-      <p class="results-placeholder" id="results-placeholder">
-        Enter a title above to begin your search.
-      </p>
+    <div class="page-layout">
 
-      <div class="results-meta" id="results-meta" style="display:none">
-        <span id="results-count"></span>
-        <span id="results-query"></span>
+      <!-- Sidebar -->
+      <aside class="filter-sidebar" id="filter-sidebar" style="display:none">
+        <div class="filter-group">
+          <h3 class="filter-heading">Sort</h3>
+          <select class="filter-select" id="filter-sort" onchange="onFilterChange()">
+            <option value="none">Default</option>
+            <option value="az">A → Z</option>
+            <option value="za">Z → A</option>
+            <option value="price-asc">Price: Low to High</option>
+            <option value="price-desc">Price: High to Low</option>
+          </select>
+        </div>
+
+        <div class="filter-group">
+          <h3 class="filter-heading">Currency</h3>
+          <select class="filter-select" id="filter-currency" onchange="onFilterChange()">
+            <option value="none">Original</option>
+            <option value="EUR">EUR</option>
+            <option value="RON">RON</option>
+            <option value="GBP">GBP</option>
+          </select>
+        </div>
+
+        <div class="filter-group">
+            <h3 class="filter-heading">Condition</h3>
+            <label class="filter-checkbox">
+                <input type="checkbox" class="filter-condition" value="NEW" checked onchange="onFilterChange()"/> New
+            </label>
+            <label class="filter-checkbox">
+                <input type="checkbox" class="filter-condition" value="USED" checked onchange="onFilterChange()"/> Used
+            </label>
+        </div>
+
+        <div class="filter-group">
+          <h3 class="filter-heading">Platforms</h3>
+          <div id="filter-platforms"></div>
+        </div>
+      </aside>
+
+      <!-- Results -->
+      <div class="results-wrapper">
+        <section class="results-section" id="results-section">
+          <p class="results-placeholder" id="results-placeholder">
+            Enter a title above to begin your search.
+          </p>
+
+          <div class="results-meta" id="results-meta" style="display:none">
+            <span id="results-count"></span>
+            <span id="results-query"></span>
+          </div>
+
+          <div class="results-list" id="results-list"></div>
+        </section>
       </div>
 
-      <div class="results-list" id="results-list"></div>
-    </section>
+    </div>
 
   </main>
 
   <footer class="footer">
-    Announce Finder &mdash; a web crawler project
+    Announce Finder
   </footer>
 
   <script>
@@ -61,8 +108,9 @@
     const meta        = document.getElementById('results-meta');
     const countEl     = document.getElementById('results-count');
     const queryEl     = document.getElementById('results-query');
-    // Check login state on page load
-    let currentUser = null;
+
+    let currentUser    = null;
+    let currentListings = [];
 
     async function checkAuth() {
         const res  = await fetch('/me');
@@ -98,30 +146,44 @@
     });
 
     function renderResults(query, results) {
+        currentListings = results;
+        buildPlatformCheckboxes(results);
+        document.getElementById('filter-sidebar').style.display = results.length > 0 ? 'block' : 'none';
+
         list.innerHTML = '';
         meta.style.display = 'flex';
         countEl.textContent = `${results.length} result${results.length !== 1 ? 's' : ''}`;
-        queryEl.textContent = `for "${query}"`;
 
         if (results.length === 0) {
             list.innerHTML = '<p class="results-placeholder">No results found.</p>';
             return;
         }
 
-        results.forEach((r, i) => {
+        renderListings(applyFilters(results));
+    }
+
+    function renderListings(listings) {
+        list.innerHTML = '';
+        if (listings.length === 0) {
+            list.innerHTML = '<p class="results-placeholder">No results match the current filters.</p>';
+            return;
+        }
+        listings.forEach((r, i) => {
             const card = document.createElement('div');
             card.className = 'result-card';
             card.style.animationDelay = `${i * 80}ms`;
             card.innerHTML = `
                 <div class="card-info">
                     ${r.image ? `<img src="${r.image}" class="card-image" alt="${r.title}"/>` : ''}
-                    <a href="${r.url}" class="card-title" target="_blank">${r.title}</a>
-                    <div class="card-meta">
-                        <span class="card-platform">${r.platform}</span>
+                    <div class="card-details">
+                        <a href="${r.url}" class="card-title" target="_blank">${r.title}</a>
+                        <div class="card-meta">
+                            <span class="card-platform">${r.platform}</span>
+                        </div>
                     </div>
                 </div>
                 <div class="card-price-col">
-                    <p class="card-price">${r.price}</p>
+                    <p class="card-price">${getDisplayPrice(r.price)}</p>
                     <button class="card-btn" data-saved="false" onclick="addToFavorites(this, ${JSON.stringify(r).replace(/"/g, '&quot;')})">
                         Add to Favorites
                     </button>
@@ -132,44 +194,45 @@
     }
 
     async function addToFavorites(btn, listing) {
-      if (!currentUser) {
-          alert('Please sign in to save favorites.');
-          return;
-      }
+        if (!currentUser) {
+            alert('Please sign in to save favorites.');
+            return;
+        }
 
-      const isSaved = btn.dataset.saved === 'true';
+        const isSaved = btn.dataset.saved === 'true';
 
-      if (isSaved) {
-          const res  = await fetch('/favorites/remove', {
-              method:  'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body:    JSON.stringify({ listing_id: listing.listing_id })
-          });
-          const data = await res.json();
-          if (data.success) {
-              btn.textContent    = 'Add to Favorites';
-              btn.dataset.saved  = 'false';
-              btn.classList.remove('saved');
-          } else {
-              alert(data.error);
-          }
-      } else {
-          const res  = await fetch('/favorites/add', {
-              method:  'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body:    JSON.stringify(listing)
-          });
-          const data = await res.json();
-          if (data.success) {
-              btn.textContent   = '✓ Saved';
-              btn.dataset.saved = 'true';
-              btn.classList.add('saved');
-          } else {
-              alert(data.error);
-          }
-      }
+        if (isSaved) {
+            const res  = await fetch('/favorites/remove', {
+                method:  'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body:    JSON.stringify({ listing_id: listing.listing_id })
+            });
+            const data = await res.json();
+            if (data.success) {
+                btn.textContent   = 'Add to Favorites';
+                btn.dataset.saved = 'false';
+                btn.classList.remove('saved');
+            } else {
+                alert(data.error);
+            }
+        } else {
+            const res  = await fetch('/favorites/add', {
+                method:  'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body:    JSON.stringify(listing)
+            });
+            const data = await res.json();
+            if (data.success) {
+                btn.textContent   = '✓ Saved';
+                btn.dataset.saved = 'true';
+                btn.classList.add('saved');
+            } else {
+                alert(data.error);
+            }
+        }
     }
 
+    fetchExchangeRates();
     checkAuth();
   </script>
 
