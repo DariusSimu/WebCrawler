@@ -22,11 +22,24 @@ def load_user(user_id):
 with app.app_context():
     db.create_all()
 
-# --------------- Pages -------------------
+# --------------- JavaScript -------------------
+@app.route('/main.js')
+def main_js():
+    return send_from_directory('Frontend', 'main.js')
+
+@app.route('/account.js')
+def account_js():
+    return send_from_directory('Frontend', 'account.js')
+
+@app.route('/login.js')
+def login_js():
+    return send_from_directory('Frontend', 'login.js')
+
 @app.route('/filter.js')
 def filter_js():
     return send_from_directory('Frontend', 'filter.js')
 
+# --------------- Pages -------------------
 @app.route('/')
 def index():
     return send_from_directory('Frontend', 'MainPage.html')
