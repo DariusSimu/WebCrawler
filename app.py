@@ -4,7 +4,6 @@ from Backend.main_crawler import search_all
 from Backend.database import db
 from Backend.models_db import User
 from Backend.services import register_user, login_user as login_user_service, add_favorite, remove_favorite, get_favorites
-from config import SECRET_KEY, ENCRYPTION_KEY
 from Backend.encryption import decrypt
 import os
 
@@ -15,8 +14,15 @@ if database_url.startswith('postgres://'):
 
 app.config['SQLALCHEMY_DATABASE_URI'] = database_url
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', SECRET_KEY)
-app.config['ENCRYPTION_KEY']  = os.environ.get('ENCRYPTION_KEY', ENCRYPTION_KEY)
+
+try:
+    from config import SECRET_KEY as _SECRET_KEY, ENCRYPTION_KEY as _ENCRYPTION_KEY
+except ImportError:
+    _SECRET_KEY      = ''
+    _ENCRYPTION_KEY  = ''
+
+app.config['SECRET_KEY']     = os.environ.get('SECRET_KEY',     _SECRET_KEY)
+app.config['ENCRYPTION_KEY'] = os.environ.get('ENCRYPTION_KEY', _ENCRYPTION_KEY)
 
 
 db.init_app(app)
