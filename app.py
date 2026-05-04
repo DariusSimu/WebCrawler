@@ -107,7 +107,7 @@ def logout():
 @app.route('/me')
 def me():
     if current_user.is_authenticated:
-        return jsonify({'logged_in': True, 'email': decrypt(current_user.email)})
+        return jsonify({'logged_in': True, 'email': current_user.email})
     return jsonify({'logged_in': False})
 
 # ------------- Favorites --------------

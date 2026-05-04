@@ -12,21 +12,15 @@ def register_user(email, password):
         return None, 'Invalid email address'
     if len(password) < 6:
         return None, 'Password must be at least 6 characters long'
-    if User.query.filter_by(email=encrypt(email)).first():
+    if User.query.filter_by(email=email).first():
         return None, 'Email already registered'
-    user = User(
-        email         = encrypt(email),
-        password_hash = generate_password_hash(password)
-    )
+    user = User(email=email, password_hash=generate_password_hash(password))
     db.session.add(user)
     db.session.commit()
     return user, None
 
 def login_user(email, password):
-    encrypted_email = encrypt(email)
-    print(f"Looking for encrypted email: {encrypted_email}")
-    user = User.query.filter_by(email=encrypted_email).first()
-    print(f"User found: {user}")
+    user = User.query.filter_by(email=email).first()
     if not user or not check_password_hash(user.password_hash, password):
         return None, 'Invalid email or password'
     return user, None
