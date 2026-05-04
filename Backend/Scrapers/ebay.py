@@ -4,7 +4,16 @@ from thefuzz import fuzz
 import time
 import requests
 import base64
-from config import EBAY_APP_ID, EBAY_CERT_ID
+import os
+
+try:
+    from config import EBAY_APP_ID as _APP_ID, EBAY_CERT_ID as _CERT_ID
+except ImportError:
+    _APP_ID  = ''
+    _CERT_ID = ''
+
+EBAY_APP_ID  = os.environ.get('EBAY_APP_ID',  _APP_ID)
+EBAY_CERT_ID = os.environ.get('EBAY_CERT_ID', _CERT_ID)
 
 class EbayScraper(BaseScraper):
     CONDITION = "BOTH"
