@@ -2,6 +2,7 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from Backend.database import db
 from Backend.models_db import User, Favorite, PasswordResetToken
 from email.mime.text import MIMEText
+from datetime import timezone, datetime
 import smtplib
 import re
 import os
@@ -89,9 +90,7 @@ def send_reset_email(to_email, token, base_url):
     msg['To']      = to_email
 
     try:
-        with smtplib.SMTP('smtp.gmail.com', 587) as smtp:
-            smtp.ehlo()
-            smtp.starttls()
+        with smtplib.SMTP_SSL('smtp.gmail.com', 465) as smtp:
             smtp.login(GMAIL_ADDRESS, GMAIL_PASSWORD)
             smtp.sendmail(GMAIL_ADDRESS, to_email, msg.as_string())
         return True
@@ -100,6 +99,11 @@ def send_reset_email(to_email, token, base_url):
         return False
 
 def request_password_reset(email, base_url):
+    PasswordResetToken.query.filter(
+        PasswordResetToken.expires_at < datetime.now(timezone.utc)
+    ).delete()
+    db.session.commit()
+
     user = User.query.filter_by(email=email).first()
     if not user:
         return True  # don't reveal if email exists
